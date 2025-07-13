@@ -1,0 +1,19 @@
+{
+	"name": "aide-serveur-cicd",
+	"module": "src/index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "bun --watch src/index.js"
+	},
+	"devDependencies": {
+		"@types/bun": "latest"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"dotenv": "^17.2.0",
+		"puppeteer": "^24.12.1"
+	}
+}
