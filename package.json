@@ -1,11 +1,11 @@
 {
-	"name": "@linventif/aide-server-cicd",
+	"name": "@linventif/aide-serveur-cicd",
 	"version": "1.0.0",
 	"description": "CLI to automate resource updates on aide-serveur.fr",
 	"type": "module",
 	"main": "dist/index.js",
 	"bin": {
-		"aide-server-cicd": "dist/index.js"
+		"aide-serveur-cicd": "dist/index.js"
 	},
 	"scripts": {
 		"dev": "bun --watch src/index.ts",
@@ -20,12 +20,12 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/linventif/aide-server-cicd.git"
+		"url": "git+https://github.com/linventif/aide-serveur-cicd.git"
 	},
 	"bugs": {
-		"url": "https://github.com/linventif/aide-server-cicd/issues"
+		"url": "https://github.com/linventif/aide-serveur-cicd/issues"
 	},
-	"homepage": "https://github.com/linventif/aide-server-cicd#readme",
+	"homepage": "https://github.com/linventif/aide-serveur-cicd#readme",
 	"license": "MIT",
 	"dependencies": {
 		"dotenv": "^17.2.0",
