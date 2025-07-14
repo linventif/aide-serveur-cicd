@@ -52,28 +52,48 @@ Automates posting updates to a resource on [aide-serveur.fr](https://aide-serveu
 Create `.github/workflows/update.yml`:
 
 ```yaml
-name: Auto Update Resource
+# .github/workflows/auto-update.yml
+name: Auto Resource Update
+
 on:
     push:
-        branches: [main]
+        branches:
+            - main
+        tags:
+            - 'v*'
+
 jobs:
     update:
         runs-on: ubuntu-latest
+
         steps:
-            - uses: actions/checkout@v3
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Clone aide-server-cicd CLI
+              run: |
+                  git clone https://github.com/linventif/aide-server-cicd.git cli
+
             - name: Setup Bun
-              uses: oven-sh/bun@v4
-            - name: Install dependencies
-              run: bun install
-            - name: Run updater
+              uses: oven-sh/setup-bun@v1
+
+            - name: Install & build CLI
+              working-directory: cli
+              run: |
+                  bun install
+                  bun build src/index.ts --outdir=dist --target=node
+
+            - name: Auto-update resource on aide-serveur
+              working-directory: cli
               env:
-                  EMAIL: ${{ secrets.EMAIL }}
-                  PASSWORD: ${{ secrets.PASSWORD }}
-                  RESOURCE: ${{ secrets.RESOURCE }}
-                  TARGET_URL: 'https://aide-serveur.fr/ressources/'
-                  UPDATE_VERSION: '${{ github.ref_name }}'
+                  EMAIL: ${{ secrets.AIDE_EMAIL }}
+                  PASSWORD: ${{ secrets.AIDE_PASSWORD }}
+                  RESOURCE: ${{ secrets.RESOURCE_ID }}
+                  TARGET_URL: https://aide-serveur.fr/ressources/
+                  UPDATE_VERSION: ${{ github.ref_name }}
                   UPDATE_MSG: 'Release ${{ github.ref_name }}'
-              run: aide-server-cicd
+              run: |
+                  node dist/index.js
 ```
 
 -   Store all sensitive values (`EMAIL`, `PASSWORD`, `RESOURCE`) in GitHub Secrets.
