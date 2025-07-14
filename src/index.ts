@@ -32,7 +32,7 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 	process.exit(1);
 }
 
-(async () => {
+async () => {
 	let browser;
 	if (DEV_MODE) {
 		browser = await puppeteer.launch({
@@ -143,5 +143,13 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 	await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 });
 	console.log('💾 Mise à jour sauvegardée avec succès');
 
-	// Fin du script
-})();
+	if (DEV_MODE) {
+		console.log(
+			'🛑 DEV_MODE actif : le navigateur reste ouvert. Fermez-le manuellement pour terminer.'
+		);
+	} else {
+		await browser.close();
+		console.log('✅ Script terminé avec succès');
+		process.exit(0);
+	}
+};
