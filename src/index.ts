@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import puppeteer from 'puppeteer';
 
-// Récupération des identifiants et paramètres depuis .env
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 const DEV_MODE = process.env.DEV_MODE === 'true' || false;
@@ -60,32 +59,26 @@ async () => {
 	const page = await browser.newPage();
 	await page.setViewport({ width: 1920, height: 1080 });
 
-	// 1) Accès initial à la page resources
 	await page.goto(TARGET_URL, { waitUntil: 'networkidle2' });
 	console.log('✅ Navigateur ouvert sur', TARGET_URL);
 
-	// 2) Authentification
 	await page.click('span.p-navgroup-link--logIn');
 	await page.waitForSelector('input[name="login"]', { timeout: 5000 });
-	// Clear et saisie email
 	await page.$eval('input[name="login"]', (el: any) => {
 		el.value = '';
 	});
 	await page.type('input[name="login"]', EMAIL, { delay: 15 });
-	// Clear et saisie password
 	await page.$eval('input[name="password"]', (el: any) => {
 		el.value = '';
 	});
 	await page.type('input[name="password"]', PASSWORD, { delay: 15 });
 	await page.click('button.button--icon--login');
-	// Attendre la disparition du bouton Connexion
 	await page.waitForSelector('span.p-navgroup-link--logIn', {
 		hidden: true,
 		timeout: 10000,
 	});
 	console.log('🔓 Authentification réussie !');
 
-	// 3) Aller à la page de la ressource
 	const resourceUrl = `https://aide-serveur.fr/ressources/${RESOURCE}`;
 	try {
 		await page.goto(resourceUrl, {
@@ -100,7 +93,6 @@ async () => {
 	}
 	console.log('➡️ Ouverture de la ressource :', resourceUrl);
 
-	// 4) Cliquer sur “Poster une mise à jour”
 	await page.waitForSelector('a.button[href$="/post-update"]', {
 		timeout: 5000,
 	});
@@ -109,8 +101,6 @@ async () => {
 		timeout: 10000,
 	});
 
-	// 5) Remplir le formulaire de mise à jour
-	// Titre
 	await page.$eval('input[name="update_title"]', (el: any) => {
 		el.value = '';
 	});
@@ -118,7 +108,6 @@ async () => {
 		delay: 15,
 	});
 
-	// Message WYSIWYG
 	await page.$eval(
 		'div.fr-element[contenteditable="true"]',
 		(el: any, msg: string) => {
@@ -127,7 +116,6 @@ async () => {
 		UPDATE_MSG
 	);
 
-	// Nouvelle version
 	await page.click('input[name="new_version"]');
 	await page.$eval('input[name="version_string"]', (el: any) => {
 		el.value = '';
@@ -138,7 +126,6 @@ async () => {
 
 	console.log('✅ Formulaire de mise à jour rempli avec', UPDATE_VERSION);
 
-	// 6) Sauvegarder
 	await page.click('button.button--icon--save');
 	await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 });
 	console.log('💾 Mise à jour sauvegardée avec succès');
