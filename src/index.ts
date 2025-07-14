@@ -33,17 +33,29 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 }
 
 (async () => {
-	const browser = await puppeteer.launch({
-		headless: !DEV_MODE,
-		slowMo: 15,
-		devtools: true,
-		args: [
-			'--no-sandbox',
-			'--disable-setuid-sandbox',
-			'--window-position=1920,0',
-			'--window-size=1920,1080',
-		],
-	});
+	let browser;
+	if (DEV_MODE) {
+		browser = await puppeteer.launch({
+			headless: false,
+			slowMo: 15,
+			devtools: true,
+			args: [
+				'--no-sandbox',
+				'--disable-setuid-sandbox',
+				'--window-position=1920,0',
+				'--window-size=1920,1080',
+			],
+		});
+	} else {
+		browser = await puppeteer.launch({
+			headless: true,
+			args: [
+				'--no-sandbox',
+				'--disable-setuid-sandbox',
+				'--window-size=1920,1080',
+			],
+		});
+	}
 
 	const page = await browser.newPage();
 	await page.setViewport({ width: 1920, height: 1080 });
