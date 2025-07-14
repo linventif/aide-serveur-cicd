@@ -82,7 +82,7 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 	console.log('➡️ Ouverture de la ressource :', resourceUrl);
 
 	// small delay to ensure dynamic widgets finish loading
-	await page.waitForTimeout(1000);
+	await new Promise((res) => setTimeout(res, 1000));
 
 	// click the “Post update” button
 	await page.waitForSelector('a.button[href$="/post-update"]', {
@@ -111,6 +111,7 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 	await page.$eval(
 		'div.fr-element[contenteditable="true"]',
 		(el: HTMLElement, msg: string) => {
+			// @ts-ignore
 			el.textContent = msg;
 		},
 		UPDATE_MSG
