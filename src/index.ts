@@ -33,7 +33,7 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 	process.exit(1);
 }
 
-async () => {
+(async () => {
 	let browser;
 	if (DEV_MODE) {
 		browser = await puppeteer.launch({
@@ -174,4 +174,4 @@ async () => {
 		console.log('✅ Script terminé avec succès');
 		process.exit(0);
 	}
-};
+})();
