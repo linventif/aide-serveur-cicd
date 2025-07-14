@@ -1,0 +1,35 @@
+name: 'Auto Resource Updater'
+
+# Display details in the marketplace
+branding:
+    icon: 'chevron-right'
+    color: 'blue'
+
+# Short description appears in Marketplace
+description: |
+    GitHub Action to automatically post an update to a resource on aide-serveur.fr.
+
+inputs:
+    email:
+        description: 'User email for aide-serveur.fr login'
+        required: true
+    password:
+        description: 'User password for aide-serveur.fr login'
+        required: true
+    resource:
+        description: 'Resource slug (e.g. test.4571)'
+        required: true
+    target_url:
+        description: 'Base URL for the resources page'
+        required: true
+        default: 'https://aide-serveur.fr/ressources/'
+    update_version:
+        description: 'New version string for the update (e.g. v1.2.3)'
+        required: true
+    update_msg:
+        description: 'Release notes or update message'
+        required: true
+
+runs:
+    using: 'node20'
+    main: 'dist/index.js'
