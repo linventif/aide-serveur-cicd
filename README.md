@@ -1,55 +1,75 @@
-# Discord Resource Auto-Updater
+# aide-server-cicd
 
-Automates posting updates to a resource on [aide-serveur.fr](https://aide-serveur.fr) with Puppeteer.
+**CLI tool** to automatically post updates to your resource on [aide-serveur.fr](https://aide-serveur.fr).
 
-## Setup
+## Features
 
-1. **Clone repository**
+-   Logs into the site with your email & password
+-   Navigates to a given resource
+-   Fills in update title & message
+-   Optionally sets an **external download URL** or **uploads a local artifact**
+-   Submits the update form
 
-    ```bash
-    git clone https://github.com/linventif/aide-server-cicd.git
-    cd aide-server-cicd
-    ```
+## Installation
 
-2. **Install dependencies**
+```bash
+npm install -g @linventif/aide-server-cicd
+# or with Bun
+bun add -g @linventif/aide-server-cicd
+```
 
-    ```bash
-    bun install
-    ```
+## Quickstart
 
-3. **Environment Variables**
+Create a `.env` file in your project root:
 
-    | Variable         | Description                                | Example                               |
-    | ---------------- | ------------------------------------------ | ------------------------------------- |
-    | `EMAIL`          | Connection email for aide-serveur.fr login | `user@example.com`                    |
-    | `PASSWORD`       | Password for aide-serveur.fr login         | `supersecret123`                      |
-    | `RESOURCE`       | Resource slug (e.g. `test.4571`)           | `test.4571`                           |
-    | `TARGET_URL`     | Base URL for resources page                | `https://aide-serveur.fr/ressources/` |
-    | `UPDATE_VERSION` | New version title for the update           | `v1.2.3`                              |
-    | `UPDATE_MSG`     | Release notes or update message            | `Fixes typo and adds feature X.`      |
+```dotenv
+# Required
+EMAIL=you@example.com
+PASSWORD=••••••••
+RESOURCE=test.4571           # resource identifier on aide-serveur.fr
+UPDATE_VERSION=1.2.3         # version string to post
+UPDATE_MSG="Release 1.2.3"   # update message body
 
-4. **Usage**
+# Optional (pick one)
+EXTERNAL_URL=https://example.com/download/1.2.3.zip
+# ARTIFACT_PATH=./dist/app-1.2.3.zip
 
-    - **Development** (live reload):
+# Advanced
+TARGET_URL=https://aide-serveur.fr/ressources/   # default target
+DEV_MODE=false    # if true, opens browser in non-headless mode
+```
 
-        ```bash
-        bun run dev
-        ```
+### Available environment variables
 
-    - **Build** production bundle:
+| Name             | Required? | Description                                                                |
+| ---------------- | --------- | -------------------------------------------------------------------------- |
+| `EMAIL`          | yes       | Your login email                                                           |
+| `PASSWORD`       | yes       | Your login password                                                        |
+| `RESOURCE`       | yes       | Resource slug (e.g. `test.4571`)                                           |
+| `UPDATE_VERSION` | yes       | Version string for this update                                             |
+| `UPDATE_MSG`     | yes       | Markdown/plain text message for the update                                 |
+| `EXTERNAL_URL`   | no        | If set, selects “external” download and fills this URL                     |
+| `ARTIFACT_PATH`  | no        | If set (and no `EXTERNAL_URL`), selects “local” and uploads it             |
+| `TARGET_URL`     | no        | Base URL for resources (defaults to `https://aide-serveur.fr/ressources/`) |
+| `DEV_MODE`       | no        | `true` to run browser with UI & slower typing (default: `false`)           |
 
-        ```bash
-        bun run build
-        ```
+> **Note:** Only one of `EXTERNAL_URL` or `ARTIFACT_PATH` should be provided.
 
-    - **Run** after build:
-        ```bash
-        bun run start
-        ```
+## Usage
 
-## CI/CD Integration (GitHub Actions)
+Once installed, simply run:
 
-Create `.github/workflows/update.yml`:
+```bash
+aide-server-cicd
+```
+
+Or, if you prefer to call the built script directly:
+
+```bash
+node dist/index.js
+```
+
+## Example GitHub Actions Workflow
 
 ```yaml
 # .github/workflows/auto-update.yml
@@ -57,48 +77,40 @@ name: Auto Resource Update
 
 on:
     push:
-        branches:
-            - main
-        tags:
-            - 'v*'
+        branches: [main]
 
 jobs:
     update:
         runs-on: ubuntu-latest
-
         steps:
-            - name: Checkout repository
+            - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Clone aide-server-cicd CLI
-              run: |
-                  git clone https://github.com/linventif/aide-server-cicd.git cli
-
-            - name: Setup Bun
+            - name: Setup Bun (or Node)
               uses: oven-sh/setup-bun@v1
+              # or: uses: actions/setup-node@v3 with node-version: '16'
 
-            - name: Install & build CLI
-              working-directory: cli
-              run: |
-                  bun install
-                  bun build src/index.ts --outdir=dist --target=node
+            - name: Install dependencies
+              run: bun install
+              # or: npm install
 
-            - name: Auto-update resource on aide-serveur
-              working-directory: cli
+            - name: Run resource updater
               env:
-                  EMAIL: ${{ secrets.AIDE_EMAIL }}
-                  PASSWORD: ${{ secrets.AIDE_PASSWORD }}
-                  RESOURCE: ${{ secrets.RESOURCE_ID }}
-                  TARGET_URL: https://aide-serveur.fr/ressources/
+                  EMAIL: ${{ secrets.EMAIL }}
+                  PASSWORD: ${{ secrets.PASSWORD }}
+                  RESOURCE: ${{ secrets.RESOURCE }}
                   UPDATE_VERSION: ${{ github.ref_name }}
                   UPDATE_MSG: 'Release ${{ github.ref_name }}'
-              run: |
-                  node dist/index.js
+                  EXTERNAL_URL: ${{ secrets.EXTERNAL_URL }} # optional
+                  # ARTIFACT_PATH:  ./build/app-${{ github.ref_name }}.zip
+              run: bun src/index.ts
+              # or: aide-server-cicd
 ```
 
--   Store all sensitive values (`EMAIL`, `PASSWORD`, `RESOURCE`) in GitHub Secrets.
--   Adjust triggers as needed.
+This will automatically log in and post a new version each time you push to `main`.
 
 ---
 
-_Minimal README with environment table and CI/CD example._
+## License
+
+MIT © [linventif](https://github.com/linventif/aide-server-cicd)

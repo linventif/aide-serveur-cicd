@@ -8,6 +8,8 @@ const DEV_MODE = process.env.DEV_MODE === 'true' || false;
 const TARGET_URL =
 	process.env.TARGET_URL || 'https://aide-serveur.fr/ressources/';
 const RESOURCE = process.env.RESOURCE;
+const EXTERNAL_URL = process.env.EXTERNAL_URL;
+const ARTIFACT_PATH = process.env.ARTIFACT_PATH;
 
 if (!RESOURCE) {
 	console.error(
@@ -125,6 +127,39 @@ async () => {
 	});
 
 	console.log('✅ Formulaire de mise à jour rempli avec', UPDATE_VERSION);
+
+	if (EXTERNAL_URL) {
+		// click the “external” radio
+		await page.click('input[name="version_type"][value="external"]');
+		// wait for the URL input to become enabled
+		await page.waitForSelector(
+			'input[name="external_download_url"]:not([disabled])',
+			{ timeout: 5000 }
+		);
+		// clear & fill
+		await page.$eval(
+			'input[name="external_download_url"]',
+			(el: any) => (el.value = '')
+		);
+		await page.type('input[name="external_download_url"]', EXTERNAL_URL, {
+			delay: 15,
+		});
+		console.log('🔗 External URL set to', EXTERNAL_URL);
+	} else if (ARTIFACT_PATH) {
+		// click the “local” radio
+		await page.click('input[name="version_type"][value="local"]');
+		// wait for the file input to become visible
+		const [fileChooser] = await Promise.all([
+			page.waitForFileChooser({ timeout: 5000 }),
+			page.click('a.js-attachmentUpload'), // opens the native file picker
+		]);
+		await fileChooser.accept([ARTIFACT_PATH]);
+		console.log('📦 Artifact uploaded from', ARTIFACT_PATH);
+	} else {
+		console.log(
+			'⚠️ No EXTERNAL_URL or ARTIFACT_PATH provided; skipping download/source selection.'
+		);
+	}
 
 	await page.click('button.button--icon--save');
 	await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 });
