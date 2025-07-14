@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer';
 // Récupération des identifiants et paramètres depuis .env
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
+const DEV_MODE = process.env.DEV_MODE === 'true' || false;
 const TARGET_URL =
 	process.env.TARGET_URL || 'https://aide-serveur.fr/ressources/';
 const RESOURCE = process.env.RESOURCE;
@@ -33,7 +34,7 @@ if (!UPDATE_VERSION || !UPDATE_MSG) {
 
 (async () => {
 	const browser = await puppeteer.launch({
-		headless: false,
+		headless: !DEV_MODE,
 		slowMo: 15,
 		devtools: true,
 		args: [
